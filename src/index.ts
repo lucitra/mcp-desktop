@@ -21,4 +21,4 @@ registerAllTools(server)
 
 const transport = new StdioServerTransport()
 await server.connect(transport)
-console.error('mcp-desktop server running on stdio')
+console.error(`mcp-desktop v${pkg.version} running on stdio`)
