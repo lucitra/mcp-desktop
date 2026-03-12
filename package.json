@@ -1,0 +1,47 @@
+{
+  "name": "@lucitra/mcp-desktop",
+  "version": "0.1.0",
+  "description": "MCP server for macOS desktop automation — capture screenshots of the full screen or specific application windows.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-desktop": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "desktop",
+    "screenshot",
+    "macos",
+    "automation"
+  ],
+  "author": "Lucitra <hello@lucitra.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucitra/mcp-desktop"
+  },
+  "os": [
+    "darwin"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsup": "^8.0.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.7.0"
+  }
+}
