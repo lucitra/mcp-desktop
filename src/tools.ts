@@ -2,9 +2,22 @@ import { z } from 'zod'
 import { execFile } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { readFile, unlink } from 'node:fs/promises'
-import { randomUUID } from 'node:crypto'
+import { readFile, mkdir } from 'node:fs/promises'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+
+const SCREENSHOT_DIR = join(process.env.HOME || tmpdir(), '.lucitra', 'screenshots')
+
+/** Open a file in VSCode via macOS LaunchServices (works from background processes) */
+function openInEditor(filePath: string) {
+  execFile('open', ['-a', 'Visual Studio Code', filePath], (err) => {
+    if (err) {
+      // Fallback: open with default app
+      execFile('open', [filePath], (err2) => {
+        if (err2) console.error(`[openInEditor] failed: ${err2.message}`)
+      })
+    }
+  })
+}
 
 function exec(cmd: string, args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -57,9 +70,9 @@ export function registerDesktopScreenshotTool(server: McpServer) {
         }
       }
 
-      const tmpPath = join(tmpdir(), `screenshot-${randomUUID()}.png`)
-
       try {
+        await mkdir(SCREENSHOT_DIR, { recursive: true })
+        const filePath = join(SCREENSHOT_DIR, `desktop-${Date.now()}.png`)
         const args: string[] = []
 
         if (app) {
@@ -78,10 +91,11 @@ export function registerDesktopScreenshotTool(server: McpServer) {
           }
         }
 
-        args.push('-x', '-C', tmpPath)
+        args.push('-x', '-C', filePath)
         await exec('screencapture', args)
 
-        const pngBuffer = await readFile(tmpPath)
+        const pngBuffer = await readFile(filePath)
+        openInEditor(filePath)
 
         return {
           content: [
@@ -89,6 +103,10 @@ export function registerDesktopScreenshotTool(server: McpServer) {
               type: 'image' as const,
               data: pngBuffer.toString('base64'),
               mimeType: 'image/png' as const,
+            },
+            {
+              type: 'text' as const,
+              text: `Screenshot saved: ${filePath}`,
             },
           ],
         }
@@ -101,8 +119,6 @@ export function registerDesktopScreenshotTool(server: McpServer) {
             },
           ],
         }
-      } finally {
-        unlink(tmpPath).catch(() => {})
       }
     },
   )
